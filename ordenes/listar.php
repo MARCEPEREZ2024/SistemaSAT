@@ -160,7 +160,7 @@ require_once  '../include/header.php';
                     </thead>
                     <tbody>
                         <?php while ($o = $ordenes->fetch_assoc()): ?>
-                        <tr>
+                        <tr style="cursor: pointer;" ondblclick="window.location='ver.php?id=<?= $o['id'] ?>'">
                             <td><strong><?= $o['codigo'] ?></strong></td>
                             <td><?= htmlspecialchars($o['cliente_nombre']) ?></td>
                             <td><?= htmlspecialchars($o['marca'] . ' ' . $o['modelo']) ?></td>

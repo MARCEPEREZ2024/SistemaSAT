@@ -2,6 +2,7 @@
 require_once '../config/database.php';
 require_once '../config/config.php';
 require_once '../include/funciones.php';
+require_once '../include/csrf_helper.php';
 require_once '../include/header.php';
 
 if (!isLoggedIn()) {
@@ -17,12 +18,15 @@ $tecnicos = getAllUsers();
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $cliente_id = (int)$_POST['cliente_id'];
-    $equipo_id = (int)$_POST['equipo_id'];
-    $tecnico_id = (int)$_POST['tecnico_id'] ?: null;
-    $prioridad = sanitize($_POST['prioridad']);
-    $nota_cliente = sanitize($_POST['nota_cliente']);
-    $tiempo_estimado = (int)$_POST['tiempo_estimado'];
+    if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
+        $error = 'Token de seguridad inválido';
+    } else {
+        $cliente_id = (int)$_POST['cliente_id'];
+        $equipo_id = (int)$_POST['equipo_id'];
+        $tecnico_id = (int)$_POST['tecnico_id'] ?: null;
+        $prioridad = sanitize($_POST['prioridad']);
+        $nota_cliente = sanitize($_POST['nota_cliente']);
+        $tiempo_estimado = (int)$_POST['tiempo_estimado'];
     $costo_diagnostico = (float)$_POST['costo_diagnostico'];
     
     if (empty($cliente_id) || empty($equipo_id)) {
@@ -79,6 +83,7 @@ $equipos = $equipo_id ? [$equipo_id => getEquipoById($equipo_id)] : [];
     <div class="card">
         <div class="card-body">
             <form method="POST" id="ordenForm">
+                <?= csrf_field() ?>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">

@@ -2,6 +2,7 @@
 require_once '../config/database.php';
 require_once '../config/config.php';
 require_once '../include/funciones.php';
+require_once '../include/csrf_helper.php';
 require_once '../include/header.php';
 
 if (!isLoggedIn()) {
@@ -20,63 +21,64 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nuevo_estado = sanitize($_POST['estado']);
-    $descripcion = sanitize($_POST['descripcion']);
-    
-    $estados_permitidos = ['recibido', 'en_diagnostico', 'en_reparacion', 'esperando_repuestos', 'reparado', 'entregado', 'cancelado'];
-    
-    if (!in_array($nuevo_estado, $estados_permitidos)) {
-        $error = 'Estado no válido';
+    if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
+        $error = 'Token de seguridad inválido';
     } else {
-        $stmt = $conn->prepare("UPDATE ordenes_servicio SET estado = ? WHERE id = ?");
-        $stmt->bind_param("si", $nuevo_estado, $id);
+        $nuevo_estado = sanitize($_POST['estado']);
+        $descripcion = sanitize($_POST['descripcion']);
         
-        if ($stmt->execute()) {
-            $stmt = $conn->prepare("INSERT INTO estados_seguimiento (orden_id, estado, descripcion, tecnico_id, fecha) VALUES (?, ?, ?, ?, NOW())");
-            $stmt->bind_param("issi", $id, $nuevo_estado, $descripcion, $_SESSION['usuario_id']);
-            $stmt->execute();
-            
-            $fecha_actualizar = '';
-            switch ($nuevo_estado) {
-                case 'en_diagnostico':
-                    $fecha_actualizar = 'fecha_diagnostico';
-                    break;
-                case 'reparado':
-                    $fecha_actualizar = 'fecha_reparacion';
-                    break;
-                case 'entregado':
-                    $fecha_actualizar = 'fecha_entrega';
-                    break;
-            }
-            
-            if ($fecha_actualizar) {
-                $stmt = $conn->prepare("UPDATE ordenes_servicio SET $fecha_actualizar = NOW() WHERE id = ?");
-                $stmt->bind_param("i", $id);
-                $stmt->execute();
-            }
-            
-            if ($nuevo_estado === 'reparado') {
-                $stmt = $conn->prepare("UPDATE ordenes_servicio SET estado_orden = 'cerrada' WHERE id = ?");
-                $stmt->bind_param("i", $id);
-                $stmt->execute();
-            }
-            
-            if ($nuevo_estado === 'cancelado') {
-                $stmt = $conn->prepare("UPDATE ordenes_servicio SET estado_orden = 'cancelada' WHERE id = ?");
-                $stmt->bind_param("i", $id);
-                $stmt->execute();
-            }
-            
-            sendNotification($orden['cliente_id'], $id, $nuevo_estado);
-            
-            // Enviar email de notificación
-            require_once '../include/email_helper.php';
-            emailOrdenActualizada($id, $nuevo_estado);
-            
-            $success = 'Estado actualizado correctamente';
-            $orden = getOrdenById($id);
+        $estados_permitidos = ['recibido', 'en_diagnostico', 'en_reparacion', 'esperando_repuestos', 'reparado', 'entregado', 'cancelado'];
+        
+        if (!in_array($nuevo_estado, $estados_permitidos)) {
+            $error = 'Estado no válido';
         } else {
-            $error = 'Error al actualizar el estado';
+            $stmt = $conn->prepare("UPDATE ordenes_servicio SET estado = ? WHERE id = ?");
+            $stmt->bind_param("si", $nuevo_estado, $id);
+            
+            if ($stmt->execute()) {
+                $stmt = $conn->prepare("INSERT INTO estados_seguimiento (orden_id, estado, descripcion, tecnico_id, fecha) VALUES (?, ?, ?, ?, NOW())");
+                $stmt->bind_param("issi", $id, $nuevo_estado, $descripcion, $_SESSION['usuario_id']);
+                $stmt->execute();
+                
+                $fecha_actualizar = '';
+                switch ($nuevo_estado) {
+                    case 'en_diagnostico':
+                        $fecha_actualizar = 'fecha_diagnostico';
+                        break;
+                    case 'reparado':
+                        $fecha_actualizar = 'fecha_reparacion';
+                        break;
+                    case 'entregado':
+                        $fecha_actualizar = 'fecha_entrega';
+                        break;
+                }
+                
+                if ($fecha_actualizar) {
+                    $stmt = $conn->prepare("UPDATE ordenes_servicio SET $fecha_actualizar = NOW() WHERE id = ?");
+                    $stmt->bind_param("i", $id);
+                    $stmt->execute();
+                }
+                
+                if ($nuevo_estado === 'reparado') {
+                    $stmt = $conn->prepare("UPDATE ordenes_servicio SET estado_orden = 'cerrada' WHERE id = ?");
+                    $stmt->bind_param("i", $id);
+                    $stmt->execute();
+                }
+                
+                if ($nuevo_estado === 'cancelado') {
+                    $stmt = $conn->prepare("UPDATE ordenes_servicio SET estado_orden = 'cancelada' WHERE id = ?");
+                    $stmt->bind_param("i", $id);
+                    $stmt->execute();
+                }
+                
+                sendNotification($orden['cliente_id'], $id, $nuevo_estado);
+                
+                require_once '../include/email_helper.php';
+                emailOrdenActualizada($id, $nuevo_estado);
+                
+                $success = 'Estado actualizado correctamente';
+                $orden = getOrdenById($id);
+            }
         }
     }
 }
@@ -117,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div class="card-body">
                     <form method="POST">
+                        <?= csrf_field() ?>
                         <div class="mb-3">
                             <label for="estado" class="form-label">Nuevo Estado</label>
                             <select id="estado" name="estado" class="form-select" required>

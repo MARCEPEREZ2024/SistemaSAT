@@ -157,7 +157,7 @@ function generarReporteOrdenes($anio, $mes = null, $formato = 'pdf') {
                COUNT(o.id) as total,
                SUM(CASE WHEN o.estado = 'entregado' THEN 1 ELSE 0 END) as resueltas
         FROM usuarios u
-        LEFT JOIN ordenes_servicio o ON u.id = o.tecnico_id $where
+        LEFT JOIN ordenes_servicio o ON u.id = o.tecnico_id AND YEAR(o.fecha_ingreso) = $anio
         WHERE u.rol = 'tecnico'
         GROUP BY u.id
         ORDER BY total DESC
