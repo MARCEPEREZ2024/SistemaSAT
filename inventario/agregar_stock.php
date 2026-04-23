@@ -22,5 +22,11 @@ $stmt = $conn->prepare("INSERT INTO movimientos_inventario (repuesto_id, tipo, c
 $stmt->bind_param("iiis", $repuesto_id, $cantidad, $_SESSION['usuario_id'], $nota);
 $stmt->execute();
 
+require_once '../include/audit_helper.php';
+registrarAccion($conn, 'agregar_stock', 'repuestos', $repuesto_id, null, json_encode([
+    'cantidad' => $cantidad,
+    'nota' => $nota
+]));
+
 redirect('../inventario/listar.php?msg=Stock agregado correctamente');
 ?>

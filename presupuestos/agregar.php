@@ -102,8 +102,8 @@ $ordenes = $conn->query("SELECT o.id, o.codigo, c.nombre as cliente_nombre, e.ma
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Cliente *</label>
-                            <select name="cliente_id" id="clienteSelect" class="form-select" required>
+                            <label for="cliente_id" class="form-label">Cliente *</label>
+                            <select id="cliente_id" name="cliente_id" class="form-select" required>
                                 <option value="">Seleccionar cliente...</option>
                                 <?php while ($c = $clientes->fetch_assoc()): ?>
                                 <option value="<?= $c['id'] ?>" data-nombre="<?= htmlspecialchars($c['nombre']) ?>" data-dni="<?= $c['dni'] ?? '' ?>" data-telefono="<?= $c['telefono'] ?? '' ?>" <?= ($orden && $orden['cliente_id'] == $c['id']) ? 'selected' : '' ?>>
@@ -115,8 +115,8 @@ $ordenes = $conn->query("SELECT o.id, o.codigo, c.nombre as cliente_nombre, e.ma
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Orden de Servicio (opcional)</label>
-                            <select name="orden_id" class="form-select">
+                            <label for="orden_id" class="form-label">Orden de Servicio (opcional)</label>
+                            <select id="orden_id" name="orden_id" class="form-select">
                                 <option value="0">Sin orden vinculada</option>
                                 <?php while ($o = $ordenes->fetch_assoc()): ?>
                                 <option value="<?= $o['id'] ?>" <?= ($orden_id == $o['id']) ? 'selected' : '' ?>>
@@ -156,14 +156,14 @@ $ordenes = $conn->query("SELECT o.id, o.codigo, c.nombre as cliente_nombre, e.ma
                 <div class="row mt-3">
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Validez (días)</label>
-                            <input type="number" name="validez_dias" class="form-control" value="15" min="1">
+                            <label for="validez_dias" class="form-label">Validez (días)</label>
+                            <input type="number" id="validez_dias" name="validez_dias" class="form-control" value="15" min="1">
                         </div>
                     </div>
                     <div class="col-md-8">
                         <div class="mb-3">
-                            <label class="form-label">Observaciones</label>
-                            <textarea name="observaciones" class="form-control" rows="2" placeholder="Notas adicionales..."></textarea>
+                            <label for="observaciones" class="form-label">Observaciones</label>
+                            <textarea id="observaciones" name="observaciones" class="form-control" rows="2" placeholder="Notas adicionales..."></textarea>
                         </div>
                     </div>
                 </div>

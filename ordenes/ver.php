@@ -109,18 +109,18 @@ $repuestos_disp = getAllRepuestos();
                     <form method="POST" action="actualizar_diagnostico.php">
                         <input type="hidden" name="orden_id" value="<?= $id ?>">
                         <div class="mb-3">
-                            <label class="form-label">Diagnóstico</label>
-                            <textarea name="diagnostico" class="form-control" rows="3"><?= htmlspecialchars($orden['diagnostico'] ?? '') ?></textarea>
+                            <label for="diagnostico" class="form-label">Diagnóstico</label>
+                            <textarea id="diagnostico" name="diagnostico" class="form-control" rows="3"><?= htmlspecialchars($orden['diagnostico'] ?? '') ?></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Solución</label>
-                            <textarea name="solucion" class="form-control" rows="3"><?= htmlspecialchars($orden['solucion'] ?? '') ?></textarea>
+                            <label for="solucion" class="form-label">Solución</label>
+                            <textarea id="solucion" name="solucion" class="form-control" rows="3"><?= htmlspecialchars($orden['solucion'] ?? '') ?></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Costo Reparación</label>
+                            <label for="costo_reparacion" class="form-label">Costo Reparación</label>
                             <div class="input-group" style="max-width: 300px;">
                                 <span class="input-group-text">S/</span>
-                                <input type="number" name="costo_reparacion" class="form-control" value="<?= $orden['costo_reparacion'] ?>" min="0" step="0.01">
+                                <input type="number" id="costo_reparacion" name="costo_reparacion" class="form-control" value="<?= $orden['costo_reparacion'] ?>" min="0" step="0.01">
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary">
@@ -278,8 +278,8 @@ $repuestos_disp = getAllRepuestos();
                 <div class="modal-body">
                     <input type="hidden" name="orden_id" value="<?= $id ?>">
                     <div class="mb-3">
-                        <label class="form-label">Repuesto</label>
-                        <select name="repuesto_id" class="form-select" required>
+                        <label for="repuesto_id" class="form-label">Repuesto</label>
+                        <select id="repuesto_id" name="repuesto_id" class="form-select" required>
                             <option value="">Seleccionar...</option>
                             <?php while ($r = $repuestos_disp->fetch_assoc()): ?>
                             <option value="<?= $r['id'] ?>" data-stock="<?= $r['stock'] ?>">
@@ -289,8 +289,8 @@ $repuestos_disp = getAllRepuestos();
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Cantidad</label>
-                        <input type="number" name="cantidad" class="form-control" value="1" min="1" required>
+                        <label for="cantidad" class="form-label">Cantidad</label>
+                        <input type="number" id="cantidad" name="cantidad" class="form-control" value="1" min="1" required>
                     </div>
                 </div>
                 <div class="modal-footer">

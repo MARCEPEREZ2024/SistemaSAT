@@ -1,8 +1,8 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../include/funciones.php';
-require_once __DIR__ . '/../include/header.php';
+require_once '../config/database.php';
+require_once '../config/config.php';
+require_once '../include/funciones.php';
+require_once '../include/header.php';
 
 if (!isLoggedIn()) {
     redirect('autenticacion/login.php');
@@ -69,6 +69,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             sendNotification($orden['cliente_id'], $id, $nuevo_estado);
             
+            // Enviar email de notificación
+            require_once '../include/email_helper.php';
+            emailOrdenActualizada($id, $nuevo_estado);
+            
             $success = 'Estado actualizado correctamente';
             $orden = getOrdenById($id);
         } else {
@@ -114,8 +118,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="card-body">
                     <form method="POST">
                         <div class="mb-3">
-                            <label class="form-label">Nuevo Estado</label>
-                            <select name="estado" class="form-select" required>
+                            <label for="estado" class="form-label">Nuevo Estado</label>
+                            <select id="estado" name="estado" class="form-select" required>
                                 <?php foreach (ESTADOS_ORDEN as $key => $value): ?>
                                 <option value="<?= $key ?>" <?= $orden['estado'] === $key ? 'selected' : '' ?>>
                                     <?= $value ?>
@@ -124,8 +128,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Descripción del Cambio</label>
-                            <textarea name="descripcion" class="form-control" rows="2" placeholder="Observaciones del cambio de estado..."></textarea>
+                            <label for="descripcion" class="form-label">Descripción del Cambio</label>
+                            <textarea id="descripcion" name="descripcion" class="form-control" rows="2" placeholder="Observaciones del cambio de estado..."></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="bi bi-save"></i> Actualizar Estado

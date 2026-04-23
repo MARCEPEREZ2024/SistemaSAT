@@ -38,10 +38,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($conn->query($sql)) {
             $orden_id = $conn->insert_id;
             
+            require_once '../include/audit_helper.php';
+            logOrdenCreate($conn, $orden_id, [
+                'codigo' => $codigo,
+                'cliente_id' => $cliente_id,
+                'equipo_id' => $equipo_id,
+                'prioridad' => $prioridad
+            ]);
+            
             $sql2 = "INSERT INTO estados_seguimiento (orden_id, estado, descripcion, tecnico_id, fecha) VALUES ($orden_id, 'recibido', 'Orden creada', {$_SESSION['usuario_id']}, NOW())";
             $conn->query($sql2);
             
             sendNotification($cliente_id, $orden_id, 'recibido');
+            
+            // Enviar email de notificación
+            require_once '../include/email_helper.php';
+            emailOrdenNueva($orden_id);
             
             redirect('ordenes/ver.php?id=' . $orden_id);
         } else {
@@ -70,8 +82,8 @@ $equipos = $equipo_id ? [$equipo_id => getEquipoById($equipo_id)] : [];
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Cliente *</label>
-                            <select name="cliente_id" id="clienteSelect" class="form-select" required onchange="cargarEquipos()">
+                            <label for="cliente_id" class="form-label">Cliente *</label>
+                            <select id="cliente_id" name="cliente_id" id="clienteSelect" class="form-select" required onchange="cargarEquipos()">
                                 <option value="">Seleccionar cliente...</option>
                                 <?php while ($cli = $clientes->fetch_assoc()): ?>
                                 <option value="<?= $cli['id'] ?>" <?= $cliente_id == $cli['id'] ? 'selected' : '' ?>>
@@ -83,8 +95,8 @@ $equipos = $equipo_id ? [$equipo_id => getEquipoById($equipo_id)] : [];
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Equipo *</label>
-                            <select name="equipo_id" id="equipoSelect" class="form-select" required>
+                            <label for="equipo_id" class="form-label">Equipo *</label>
+                            <select id="equipo_id" name="equipo_id" id="equipoSelect" class="form-select" required>
                                 <option value="">Seleccionar equipo...</option>
                                 <?php if ($equipo_id && $equipo = getEquipoById($equipo_id)): ?>
                                 <option value="<?= $equipo['id'] ?>" selected>
@@ -98,8 +110,8 @@ $equipos = $equipo_id ? [$equipo_id => getEquipoById($equipo_id)] : [];
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Técnico Asignado</label>
-                            <select name="tecnico_id" class="form-select">
+                            <label for="tecnico_id" class="form-label">Técnico Asignado</label>
+                            <select id="tecnico_id" name="tecnico_id" class="form-select">
                                 <option value="">Sin asignar</option>
                                 <?php while ($tec = $tecnicos->fetch_assoc()): ?>
                                 <option value="<?= $tec['id'] ?>"><?= htmlspecialchars($tec['nombre']) ?></option>
@@ -109,8 +121,8 @@ $equipos = $equipo_id ? [$equipo_id => getEquipoById($equipo_id)] : [];
                     </div>
                     <div class="col-md-3">
                         <div class="mb-3">
-                            <label class="form-label">Prioridad</label>
-                            <select name="prioridad" class="form-select">
+                            <label for="prioridad" class="form-label">Prioridad</label>
+                            <select id="prioridad" name="prioridad" class="form-select">
                                 <option value="normal">Normal</option>
                                 <option value="alta">Alta</option>
                                 <option value="urgente">Urgente</option>
@@ -120,25 +132,25 @@ $equipos = $equipo_id ? [$equipo_id => getEquipoById($equipo_id)] : [];
                     </div>
                     <div class="col-md-3">
                         <div class="mb-3">
-                            <label class="form-label">Días Estimados</label>
-                            <input type="number" name="tiempo_estimado" class="form-control" value="3" min="1">
+                            <label for="tiempo_estimado" class="form-label">Días Estimados</label>
+                            <input type="number" id="tiempo_estimado" name="tiempo_estimado" class="form-control" value="3" min="1">
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Costo Diagnóstico</label>
+                            <label for="costo_diagnostico" class="form-label">Costo Diagnóstico</label>
                             <div class="input-group">
                                 <span class="input-group-text">S/</span>
-                                <input type="number" name="costo_diagnostico" class="form-control" value="0" min="0" step="0.01">
+                                <input type="number" id="costo_diagnostico" name="costo_diagnostico" class="form-control" value="0" min="0" step="0.01">
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Notas del Cliente</label>
-                    <textarea name="nota_cliente" class="form-control" rows="2" placeholder="Problema reportado por el cliente..."></textarea>
+                    <label for="nota_cliente" class="form-label">Notas del Cliente</label>
+                    <textarea id="nota_cliente" name="nota_cliente" class="form-control" rows="2" placeholder="Problema reportado por el cliente..."></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-save"></i> Crear Orden

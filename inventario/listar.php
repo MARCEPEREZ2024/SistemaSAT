@@ -92,12 +92,12 @@ $repuestos = $alerta ? getRepuestosStockBajo() : getAllRepuestos($search);
                                         <div class="modal-body">
                                             <input type="hidden" name="repuesto_id" value="<?= $rep['id'] ?>">
                                             <div class="mb-3">
-                                                <label class="form-label">Cantidad</label>
-                                                <input type="number" name="cantidad" class="form-control" min="1" required>
+                                                <label for="cantidad" class="form-label">Cantidad</label>
+                                                <input type="number" id="cantidad" name="cantidad" class="form-control" min="1" required>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Nota</label>
-                                                <textarea name="nota" class="form-control" rows="2"></textarea>
+                                                <label for="nota" class="form-label">Nota</label>
+                                                <textarea id="nota" name="nota" class="form-control" rows="2"></textarea>
                                             </div>
                                         </div>
                                         <div class="modal-footer">

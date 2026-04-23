@@ -96,20 +96,20 @@ $usuario_edit = $editando > 0 ? getUserById($editando) : null;
                         <?php endif; ?>
                         
                         <div class="mb-3">
-                            <label class="form-label">Nombre</label>
-                            <input type="text" name="nombre" class="form-control" value="<?= $usuario_edit['nombre'] ?? '' ?>" required>
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" id="nombre" name="nombre" class="form-control" value="<?= $usuario_edit['nombre'] ?? '' ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control" value="<?= $usuario_edit['email'] ?? '' ?>" required>
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" name="email" class="form-control" value="<?= $usuario_edit['email'] ?? '' ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Teléfono</label>
-                            <input type="text" name="telefono" class="form-control" value="<?= $usuario_edit['telefono'] ?? '' ?>">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="text" id="telefono" name="telefono" class="form-control" value="<?= $usuario_edit['telefono'] ?? '' ?>">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Rol</label>
-                            <select name="rol" class="form-select" required>
+                            <label for="rol" class="form-label">Rol</label>
+                            <select id="rol" name="rol" class="form-select" required>
                                 <option value="admin" <?= ($usuario_edit['rol'] ?? '') === 'admin' ? 'selected' : '' ?>>Administrador</option>
                                 <option value="tecnico" <?= ($usuario_edit['rol'] ?? '') === 'tecnico' ? 'selected' : '' ?>>Técnico</option>
                                 <option value="ventas" <?= ($usuario_edit['rol'] ?? '') === 'ventas' ? 'selected' : '' ?>>Ventas</option>
@@ -119,22 +119,22 @@ $usuario_edit = $editando > 0 ? getUserById($editando) : null;
                         <?php if ($editando): ?>
                         <h6 class="mt-4 mb-3">Comisiones (%)</h6>
                         <div class="mb-2">
-                            <label class="form-label">Por Venta</label>
-                            <input type="number" name="comision_venta" class="form-control" step="0.01" value="<?= $usuario_edit['comision_venta'] ?? 10 ?>">
+                            <label for="comision_venta" class="form-label">Por Venta</label>
+                            <input type="number" id="comision_venta" name="comision_venta" class="form-control" step="0.01" value="<?= $usuario_edit['comision_venta'] ?? 10 ?>">
                         </div>
                         <div class="mb-2">
-                            <label class="form-label">Presentismo</label>
-                            <input type="number" name="comision_presentismo" class="form-control" step="0.01" value="<?= $usuario_edit['comision_presentismo'] ?? 5 ?>">
+                            <label for="comision_presentismo" class="form-label">Presentismo</label>
+                            <input type="number" id="comision_presentismo" name="comision_presentismo" class="form-control" step="0.01" value="<?= $usuario_edit['comision_presentismo'] ?? 5 ?>">
                         </div>
                         <div class="mb-2">
-                            <label class="form-label">Especial</label>
-                            <input type="number" name="comision_especial" class="form-control" step="0.01" value="<?= $usuario_edit['comision_especial'] ?? 15 ?>">
+                            <label for="comision_especial" class="form-label">Especial</label>
+                            <input type="number" id="comision_especial" name="comision_especial" class="form-control" step="0.01" value="<?= $usuario_edit['comision_especial'] ?? 15 ?>">
                         </div>
                         <?php endif; ?>
                         
                         <div class="mb-3">
-                            <label class="form-label"><?= $editando ? 'Nueva Contraseña (dejar vacío para mantener)' : 'Contraseña' ?></label>
-                            <input type="password" name="password" class="form-control" <?= $editando ? '' : 'required' ?>>
+                            <label for="password" class="form-label"><?= $editando ? 'Nueva Contraseña (dejar vacío para mantener)' : 'Contraseña' ?></label>
+                            <input type="password" id="password" name="password" class="form-control" <?= $editando ? '' : 'required' ?>>
                         </div>
                         
                         <button type="submit" name="<?= $editando ? 'actualizar' : 'agregar' ?>" class="btn btn-<?= $editando ? 'warning' : 'success' ?> w-100">
