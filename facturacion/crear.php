@@ -17,68 +17,89 @@ $success = '';
 $orden = $orden_id ? getOrdenById($orden_id) : null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $es_factura_directa = isset($_POST['es_factura_directa']) && $_POST['es_factura_directa'] == 1;
+    $tipo_factura = $_POST['tipo_factura'] ?? 'orden';
+    $es_factura_directa = ($tipo_factura === 'directa');
     $cliente_id = (int)$_POST['cliente_id'];
     $orden_id_post = $es_factura_directa ? 0 : (int)$_POST['orden_id'];
     $tipo_pago = sanitize($_POST['tipo_pago']);
     $observaciones = sanitize($_POST['observaciones']);
     
-    if (!$cliente_id) {
-        $error = 'Debe seleccionar un cliente';
-    } else {
-        $descripciones = $_POST['descripcion'] ?? [];
-        $cantidades = $_POST['cantidad'] ?? [];
-        $precios = $_POST['precio_unitario'] ?? [];
-        
-        $items = [];
-        $subtotal = 0;
-        for ($i = 0; $i < count($descripciones); $i++) {
-            if (!empty($descripciones[$i])) {
-                $cant = (int)$cantidades[$i] ?: 1;
-                $prec = (float)$precios[$i] ?: 0;
-                $imp = $cant * $prec;
-                $subtotal += $imp;
-                $items[] = [
-                    'descripcion' => sanitize($descripciones[$i]),
-                    'cantidad' => $cant,
-                    'precio_unitario' => $prec,
-                    'importe' => $imp
-                ];
-            }
-        }
-        
-        if (empty($items)) {
-            $error = 'Debe agregar al menos un item';
+    if ($es_factura_directa) {
+        if (!$cliente_id) {
+            $error = 'Debe seleccionar un cliente';
         } else {
-            if (!$es_factura_directa && $orden_id_post > 0) {
-                $check = $conn->query("SELECT id FROM facturas WHERE orden_id = $orden_id_post");
-                if ($check->num_rows > 0) {
-                    $error = 'Ya existe una factura para esta orden';
+            $descripciones = $_POST['descripcion'] ?? [];
+            $cantidades = $_POST['cantidad'] ?? [];
+            $precios = $_POST['precio_unitario'] ?? [];
+            
+            $items = [];
+            $subtotal = 0;
+            for ($i = 0; $i < count($descripciones); $i++) {
+                if (!empty($descripciones[$i])) {
+                    $cant = (int)$cantidades[$i] ?: 1;
+                    $prec = (float)$precios[$i] ?: 0;
+                    $imp = $cant * $prec;
+                    $subtotal += $imp;
+                    $items[] = [
+                        'descripcion' => sanitize($descripciones[$i]),
+                        'cantidad' => $cant,
+                        'precio_unitario' => $prec,
+                        'importe' => $imp
+                    ];
                 }
             }
             
-            if (empty($error)) {
-                $igv = $subtotal * (IGV_PORCENTAJE / 100);
-                $total = $subtotal + $igv;
-                $numero_factura = generateNumeroFactura();
-                
-                $stmt = $conn->prepare("INSERT INTO facturas (numero_factura, orden_id, cliente_id, subtotal, igv, total, tipo_pago, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("siidddss", $numero_factura, $orden_id_post, $cliente_id, $subtotal, $igv, $total, $tipo_pago, $observaciones);
-                
-                if ($stmt->execute()) {
-                    $factura_id = $conn->insert_id;
-                    
-                    foreach ($items as $item) {
-                        $stmt2 = $conn->prepare("INSERT INTO detalle_factura (factura_id, descripcion, cantidad, precio_unitario, importe) VALUES (?, ?, ?, ?, ?)");
-                        $stmt2->bind_param("isidd", $factura_id, $item['descripcion'], $item['cantidad'], $item['precio_unitario'], $item['importe']);
-                        $stmt2->execute();
-                    }
-                    
-                    redirect('ver.php?id=' . $factura_id);
-                } else {
-                    $error = 'Error al crear la factura';
+            if (empty($items)) {
+                $error = 'Debe agregar al menos un item';
+            }
+        }
+    } else {
+        if (!$orden_id_post) {
+            $error = 'Debe seleccionar una orden de servicio';
+        } else {
+            $orden = getOrdenById($orden_id_post);
+            if ($orden) {
+                $cliente_id = $orden['cliente_id'];
+                $items = [];
+                $subtotal = $orden['costo_diagnostico'] ?? 0;
+                if (!empty($orden['costo_reparacion'])) {
+                    $subtotal += $orden['costo_reparacion'];
+                }
+                if ($subtotal > 0) {
+                    $items[] = [
+                        'descripcion' => 'Servicio técnico',
+                        'cantidad' => 1,
+                        'precio_unitario' => $subtotal,
+                        'importe' => $subtotal
+                    ];
                 }
             }
+            if (empty($items)) {
+                $error = 'La orden no tiene costos registrados';
+            }
+        }
+    }
+    
+    if (empty($error)) {
+        $igv = $subtotal * (IGV_PORCENTAJE / 100);
+        $total = $subtotal + $igv;
+        $numero_factura = generateNumeroFactura();
+        
+        $stmt = $conn->prepare("INSERT INTO facturas (numero_factura, orden_id, cliente_id, subtotal, igv, total, tipo_pago, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("siidddss", $numero_factura, $orden_id_post, $cliente_id, $subtotal, $igv, $total, $tipo_pago, $observaciones);
+        
+        if ($stmt->execute()) {
+            $factura_id = $conn->insert_id;
+            
+            foreach ($items as $item) {
+                $stmt2 = $conn->prepare("INSERT INTO detalle_factura (factura_id, descripcion, cantidad, precio_unitario, importe) VALUES (?, ?, ?, ?, ?)");
+                $stmt2->bind_param("isidd", $factura_id, $item['descripcion'], $item['cantidad'], $item['precio_unitario'], $item['importe']);
+                $stmt2->execute();
+            }
+            
+            redirect('facturacion/ver.php?id=' . $factura_id);
+        } else {
+            $error = 'Error al crear la factura';
         }
     }
 }
@@ -100,7 +121,7 @@ $clientes = getAllClientes();
     
     <div class="card">
         <div class="card-body">
-            <form method="POST" id="facturaForm">
+            <form method="POST" id="facturaForm" novalidate>
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <div class="form-check form-check-inline">
@@ -119,7 +140,7 @@ $clientes = getAllClientes();
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="orden_id" class="form-label">Orden de Servicio *</label>
-                                <select id="orden_id" name="orden_id" id="ordenSelect" class="form-select" onchange="cargarOrden()">
+                                <select id="ordenSelect" name="orden_id" class="form-select" onchange="cargarOrden()">
                                     <option value="">Seleccionar orden...</option>
                                     <?php while ($ord = $ordenes_disponibles->fetch_assoc()): ?>
                                     <option value="<?= $ord['id'] ?>" data-cliente="<?= htmlspecialchars($ord['cliente_nombre']) ?>" data-equipo="<?= htmlspecialchars($ord['marca'] . ' ' . $ord['modelo']) ?>" data-total="<?= $ord['costo_total'] ?>" <?= ($orden_id == $ord['id']) ? 'selected' : '' ?>>
@@ -144,7 +165,7 @@ $clientes = getAllClientes();
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="cliente_id" class="form-label">Cliente *</label>
-                                <select id="cliente_id" name="cliente_id" id="clienteSelectDirecta" class="form-select" required>
+                                <select id="cliente_id" name="cliente_id" class="form-select">
                                     <option value="">Seleccionar cliente...</option>
                                     <?php while ($c = $clientes->fetch_assoc()): ?>
                                     <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['nombre']) ?> - <?= $c['dni'] ?? '' ?></option>
@@ -169,13 +190,13 @@ $clientes = getAllClientes();
                     <div id="itemsContainer">
                         <div class="row item-row mb-2">
                             <div class="col-md-5">
-                                <input type="text" name="descripcion[]" class="form-control" placeholder="Descripción del servicio/repuesto" required>
+                                <input type="text" name="descripcion[]" class="form-control" placeholder="Descripción del servicio/repuesto">
                             </div>
                             <div class="col-md-2">
-                                <input type="number" name="cantidad[]" class="form-control" placeholder="Cantidad" value="1" min="1" required>
+                                <input type="number" name="cantidad[]" class="form-control" placeholder="Cantidad" value="1" min="1">
                             </div>
                             <div class="col-md-2">
-                                <input type="number" name="precio_unitario[]" class="form-control" placeholder="Precio" step="0.01" min="0" required>
+                                <input type="number" name="precio_unitario[]" class="form-control" placeholder="Precio" step="0.01" min="0">
                             </div>
                             <div class="col-md-2">
                                 <input type="text" class="form-control item-importe" value="S/ 0.00" readonly>
@@ -354,13 +375,13 @@ document.getElementById('addItemBtn').addEventListener('click', function() {
     newRow.className = 'row item-row mb-2';
     newRow.innerHTML = `
         <div class="col-md-5">
-            <input type="text" name="descripcion[]" class="form-control" placeholder="Descripción del servicio/repuesto" required>
+            <input type="text" name="descripcion[]" class="form-control" placeholder="Descripción del servicio/repuesto">
         </div>
         <div class="col-md-2">
-            <input type="number" name="cantidad[]" class="form-control" placeholder="Cantidad" value="1" min="1" required>
+            <input type="number" name="cantidad[]" class="form-control" placeholder="Cantidad" value="1" min="1">
         </div>
         <div class="col-md-2">
-            <input type="number" name="precio_unitario[]" class="form-control" placeholder="Precio" step="0.01" min="0" required>
+            <input type="number" name="precio_unitario[]" class="form-control" placeholder="Precio" step="0.01" min="0">
         </div>
         <div class="col-md-2">
             <input type="text" class="form-control item-importe" value="S/ 0.00" readonly>

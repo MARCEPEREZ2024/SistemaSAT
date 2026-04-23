@@ -35,10 +35,10 @@ if (isset($_POST['enviar_email'])) {
             $cuerpo = "<html><body><h2>Hola {$orden['cliente_nombre']},</h2><p>{$mensaje}</p><hr><p><strong>Orden:</strong> {$orden['codigo']}<br><strong>Equipo:</strong> {$orden['marca']} {$orden['modelo']}</p></body></html>";
             
             if (mail($orden['cliente_email'], $asunto, $cuerpo, $headers)) {
-                logNotification($orden['cliente_id'], $orden_id_seleccionada, 'estado', 'email', $asunto);
+                logNotification($orden['cliente_id'], $orden_id_seleccionada, 'email', '', $asunto);
                 $success = 'Email enviado correctamente';
             } else {
-                logNotification($orden['cliente_id'], $orden_id_seleccionada, 'estado', 'email', $asunto);
+                logNotification($orden['cliente_id'], $orden_id_seleccionada, 'email', '', $asunto);
                 $success = 'Email guardado en logs';
             }
         } else {

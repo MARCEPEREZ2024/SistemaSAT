@@ -169,16 +169,21 @@ function getConfig($clave) {
     return $row['valor'] ?? '';
 }
 
-function logNotification($cliente_id, $orden_id, $tipo, $canal, $mensaje) {
+function logNotification($usuario_id, $orden_id, $tipo, $link, $mensaje) {
     $conn = getConnection();
-    $stmt = $conn->prepare("INSERT INTO notificaciones (cliente_id, orden_id, tipo, canal, mensaje, fecha_creacion) VALUES (?, ?, ?, ?, ?, NOW())");
-    $stmt->bind_param("iisss", $cliente_id, $orden_id, $tipo, $canal, $mensaje);
-    return $stmt->execute();
+    $titulo = 'Notificación de Orden';
+    try {
+        $stmt = $conn->prepare("INSERT INTO notificaciones (titulo, mensaje, tipo, usuario_id, orden_id, link, fecha) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+        $stmt->bind_param("sssiis", $titulo, $mensaje, $tipo, $usuario_id, $orden_id, $link);
+        return $stmt->execute();
+    } catch (Exception $e) {
+        return false;
+    }
 }
 
 function sendNotification($cliente_id, $orden_id, $estado) {
     $conn = getConnection();
-    $stmt = $conn->prepare("SELECT c.nombre, c.email, c.telefono, o.codigo FROM clientes c JOIN ordenes_servicio o ON o.cliente_id = c.id WHERE o.id = ?");
+    $stmt = $conn->prepare("SELECT c.id, c.nombre, c.email, c.telefono, o.codigo FROM clientes c JOIN ordenes_servicio o ON o.cliente_id = c.id WHERE o.id = ?");
     $stmt->bind_param("i", $orden_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -195,7 +200,8 @@ function sendNotification($cliente_id, $orden_id, $estado) {
     ];
     
     $mensaje = "Hola {$cliente['nombre']}, le informamos que su equipo (Orden: {$cliente['codigo']}) ahora está: " . ($estados_msg[$estado] ?? $estado);
-    logNotification($cliente_id, $orden_id, 'estado', 'whatsapp', $mensaje);
+    $link = BASE_URL . 'ordenes/ver.php?id=' . $orden_id;
+    logNotification($cliente['id'], $orden_id, 'estado', $link, $mensaje);
     return true;
 }
 ?>
