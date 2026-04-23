@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../include/header.php';
-require_once __DIR__ .  '/../include/funciones.php';
+require_once  __DIR__ . '/../config/config.php';
+require_once  __DIR__ . '/../include/funciones.php';
+
 
 if (!isLoggedIn()) {
     redirect('autenticacion/login.php');
@@ -10,8 +10,11 @@ if (!isLoggedIn()) {
 
 $page_title = 'Exportar Datos';
 
+$conn = getConnection();
+
 // Exportar clientes
 if (isset($_POST['export_clientes'])) {
+    while (ob_get_level()) ob_end_clean();
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename=clientes.csv');
     $output = fopen('php://output', 'w');
@@ -27,6 +30,7 @@ if (isset($_POST['export_clientes'])) {
 
 // Exportar inventario
 if (isset($_POST['export_inventario'])) {
+    while (ob_get_level()) ob_end_clean();
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename=inventario.csv');
     $output = fopen('php://output', 'w');
@@ -42,6 +46,7 @@ if (isset($_POST['export_inventario'])) {
 
 // Exportar órdenes
 if (isset($_POST['export_ordenes'])) {
+    while (ob_get_level()) ob_end_clean();
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename=ordenes.csv');
     $output = fopen('php://output', 'w');
@@ -54,6 +59,8 @@ if (isset($_POST['export_ordenes'])) {
     fclose($output);
     exit;
 }
+
+require_once  '../include/header.php';
 ?>
 <div class="container-fluid">
     <h1><i class="bi bi-download"></i> Exportar Datos</h1>
@@ -108,4 +115,4 @@ if (isset($_POST['export_ordenes'])) {
         </div>
     </div>
 </div>
-<?php require_once __DIR__ . '/../include/footer.php'; ?>
+<?php require_once '../include/footer.php'; ?>

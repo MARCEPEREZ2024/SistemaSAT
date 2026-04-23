@@ -97,13 +97,13 @@ $ordenes = getAllOrdenes();
                 <div class="card-header">Redactar Email</div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Asunto</label>
-                        <input type="text" name="asunto" class="form-control">
+                        <label for="asunto" class="form-label">Asunto</label>
+                        <input type="text" id="asunto" name="asunto" class="form-control">
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Mensaje</label>
-                        <textarea name="mensaje" class="form-control" rows="6"></textarea>
+                        <label for="mensaje" class="form-label">Mensaje</label>
+                        <textarea id="mensaje" name="mensaje" class="form-control" rows="6"></textarea>
                     </div>
                     
                     <button type="submit" name="enviar_email" class="btn btn-success">Enviar Email</button>

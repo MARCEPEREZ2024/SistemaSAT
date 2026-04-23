@@ -32,6 +32,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "INSERT INTO equipos (cliente_id, marca, modelo, serie, tipo_equipo, diagnostico_inicial, passwordBIOS, passwordSO, accesorios, estado_equipo, fecha_ingreso, estado) VALUES ($cliente_id, '$marca', '$modelo', '$serie', '$tipo_equipo', '$diagnostico_inicial', '$passwordBIOS', '$passwordSO', '$accesorios', '$estado_equipo', '$fecha_ingreso', 'activo')";
         
         if ($conn->query($sql)) {
+            $equipo_id = $conn->insert_id;
+            
+            require_once '../include/audit_helper.php';
+            registrarAccion($conn, 'crear', 'equipos', $equipo_id, null, json_encode([
+                'marca' => $marca,
+                'modelo' => $modelo,
+                'tipo_equipo' => $tipo_equipo,
+                'cliente_id' => $cliente_id
+            ]));
+            
             redirect('equipos/listar.php');
         } else {
             $error = 'Error al registrar el equipo';
@@ -57,8 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Cliente *</label>
-                            <select name="cliente_id" class="form-select" required>
+                            <label for="cliente_id" class="form-label">Cliente *</label>
+                            <select id="cliente_id" name="cliente_id" class="form-select" required>
                                 <option value="">Seleccionar cliente...</option>
                                 <?php while ($cli = $clientes->fetch_assoc()): ?>
                                 <option value="<?= $cli['id'] ?>" <?= $cliente_id == $cli['id'] ? 'selected' : '' ?>>
@@ -70,8 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Tipo de Equipo</label>
-                            <select name="tipo_equipo" class="form-select">
+                            <label for="tipo_equipo" class="form-label">Tipo de Equipo</label>
+                            <select id="tipo_equipo" name="tipo_equipo" class="form-select">
                                 <option value="notebook">Notebook</option>
                                 <option value="desktop">Desktop</option>
                                 <option value="all-in-one">All-in-One</option>
@@ -84,42 +94,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="row">
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Marca *</label>
-                            <input type="text" name="marca" class="form-control" required placeholder="ej: Lenovo, HP, Dell">
+                            <label for="marca" class="form-label">Marca *</label>
+                            <input type="text" id="marca" name="marca" class="form-control" required placeholder="ej: Lenovo, HP, Dell">
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">Modelo</label>
-                            <input type="text" name="modelo" class="form-control" placeholder="ej: ThinkPad X1">
-                        </div>
+<div class="mb-3">
+                        <label for="ubicacion" class="form-label">Ubicación</label>
+                        <input type="text" id="ubicacion" name="ubicacion" class="form-control" placeholder="ej: Estante A-1">
+                    </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Número de Serie</label>
-                            <input type="text" name="serie" class="form-control">
+                            <label for="serie" class="form-label">Número de Serie</label>
+                            <input type="text" id="serie" name="serie" class="form-control">
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Contraseña BIOS</label>
-                            <input type="text" name="passwordBIOS" class="form-control">
+                            <label for="passwordBIOS" class="form-label">Contraseña BIOS</label>
+                            <input type="text" id="passwordBIOS" name="passwordBIOS" class="form-control">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Contraseña SO</label>
-                            <input type="text" name="passwordSO" class="form-control">
+                            <label for="passwordSO" class="form-label">Contraseña SO</label>
+                            <input type="text" id="passwordSO" name="passwordSO" class="form-control">
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Estado Físico</label>
-                            <select name="estado_equipo" class="form-select">
+                            <label for="estado_equipo" class="form-label">Estado Físico</label>
+                            <select id="estado_equipo" name="estado_equipo" class="form-select">
                                 <option value="bueno">Bueno</option>
                                 <option value="regular" selected>Regular</option>
                                 <option value="malo">Malo</option>
@@ -128,18 +138,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Fecha de Ingreso</label>
-                            <input type="date" name="fecha_ingreso" class="form-control" value="<?= date('Y-m-d') ?>">
+                            <label for="fecha_ingreso" class="form-label">Fecha de Ingreso</label>
+                            <input type="date" id="fecha_ingreso" name="fecha_ingreso" class="form-control" value="<?= date('Y-m-d') ?>">
                         </div>
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Diagnóstico Inicial</label>
-                    <textarea name="diagnostico_inicial" class="form-control" rows="2"></textarea>
+                    <label for="diagnostico_inicial" class="form-label">Diagnóstico Inicial</label>
+                    <textarea id="diagnostico_inicial" name="diagnostico_inicial" class="form-control" rows="2"></textarea>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Accesorios</label>
-                    <textarea name="accesorios" class="form-control" rows="2" placeholder="ej: Cargador, Mouse, Bolsa"></textarea>
+                    <label for="accesorios" class="form-label">Accesorios</label>
+                    <textarea id="accesorios" name="accesorios" class="form-control" rows="2" placeholder="ej: Cargador, Mouse, Bolsa"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-save"></i> Guardar Equipo

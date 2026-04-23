@@ -75,8 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error) {
                 <div class="row">
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Período de Garantía *</label>
-                            <select name="meses" class="form-select" required>
+                            <label for="meses" class="form-label">Período de Garantía *</label>
+                            <select id="meses" name="meses" class="form-select" required>
                                 <option value="1">1 mes</option>
                                 <option value="2">2 meses</option>
                                 <option value="3" selected>3 meses</option>
@@ -88,8 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error) {
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Descripción de la garantía</label>
-                    <textarea name="descripcion" class="form-control" rows="3" placeholder="Describe los términos de la garantía..."></textarea>
+                    <label for="descripcion" class="form-label">Descripción de la garantía</label>
+                    <textarea id="descripcion" name="descripcion" class="form-control" rows="3" placeholder="Describe los términos de la garantía..."></textarea>
                 </div>
                 
                 <div class="alert alert-info">

@@ -76,13 +76,39 @@ function getAllOrdenes($estado = '', $search = '') {
     $sql = "SELECT o.id, o.codigo, o.estado, o.prioridad, o.costo_total, o.fecha_ingreso, e.marca, e.modelo, c.nombre as cliente_nombre, c.email as cliente_email, c.telefono as cliente_telefono, u.nombre as tecnico_nombre FROM ordenes_servicio o LEFT JOIN equipos e ON o.equipo_id = e.id LEFT JOIN clientes c ON o.cliente_id = c.id LEFT JOIN usuarios u ON o.tecnico_id = u.id WHERE 1=1";
     
     if ($estado) {
-        $sql .= " AND o.estado = '$estado'";
+        $sql .= " AND o.estado = ?";
     }
     if ($search) {
-        $search_esc = $conn->real_escape_string($search);
-        $sql .= " AND (o.codigo LIKE '%$search_esc%' OR c.nombre LIKE '%$search_esc%' OR e.marca LIKE '%$search_esc%' OR e.modelo LIKE '%$search_esc%')";
+        $search = "%$search%";
+        if ($estado) {
+            $sql .= " AND (o.codigo LIKE ? OR c.nombre LIKE ? OR e.marca LIKE ? OR e.modelo LIKE ?)";
+        } else {
+            $sql .= " AND (o.codigo LIKE ? OR c.nombre LIKE ? OR e.marca LIKE ? OR e.modelo LIKE ?)";
+        }
     }
     $sql .= " ORDER BY o.fecha_ingreso DESC";
+    
+    $params = [];
+    $types = '';
+    
+    if ($estado) {
+        $params[] = $estado;
+        $types .= 's';
+    }
+    if ($search) {
+        $search_raw = str_replace('%', '', $search);
+        for ($i = 0; $i < 4; $i++) {
+            $params[] = $search;
+            $types .= 's';
+        }
+    }
+    
+    if (!empty($params)) {
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
     
     return $conn->query($sql);
 }
@@ -93,6 +119,75 @@ function getHistorialEstados($orden_id) {
     $stmt->bind_param("i", $orden_id);
     $stmt->execute();
     return $stmt->get_result();
+}
+
+function getTotalOrdenes($estado = '', $search = '') {
+    $conn = getConnection();
+    $sql = "SELECT COUNT(*) as total FROM ordenes_servicio o LEFT JOIN equipos e ON o.equipo_id = e.id LEFT JOIN clientes c ON o.cliente_id = c.id WHERE 1=1";
+    
+    $params = [];
+    $types = '';
+    
+    if ($estado) {
+        $sql .= " AND o.estado = ?";
+        $params[] = $estado;
+        $types .= 's';
+    }
+    if ($search) {
+        $search_escaped = "%" . $conn->real_escape_string($search) . "%";
+        $sql .= " AND (o.codigo LIKE ? OR c.nombre LIKE ? OR e.marca LIKE ? OR e.modelo LIKE ?)";
+        for ($i = 0; $i < 4; $i++) {
+            $params[] = $search_escaped;
+            $types .= 's';
+        }
+    }
+    
+    if (!empty($params)) {
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        return (int)$result['total'];
+    }
+    
+    $result = $conn->query($sql)->fetch_assoc();
+    return (int)$result['total'];
+}
+
+function getAllOrdenesPaged($estado = '', $search = '', $offset = 0, $per_page = 15) {
+    $conn = getConnection();
+    $sql = "SELECT o.id, o.codigo, o.estado, o.prioridad, o.costo_total, o.fecha_ingreso, e.marca, e.modelo, c.nombre as cliente_nombre, c.email as cliente_email, c.telefono as cliente_telefono, u.nombre as tecnico_nombre FROM ordenes_servicio o LEFT JOIN equipos e ON o.equipo_id = e.id LEFT JOIN clientes c ON o.cliente_id = c.id LEFT JOIN usuarios u ON o.tecnico_id = u.id WHERE 1=1";
+    
+    $offset = max(0, (int)$offset);
+    $per_page = max(1, (int)$per_page);
+    
+    $params = [];
+    $types = '';
+    
+    if ($estado) {
+        $sql .= " AND o.estado = ?";
+        $params[] = $estado;
+        $types .= 's';
+    }
+    if ($search) {
+        $search_escaped = "%" . $conn->real_escape_string($search) . "%";
+        $sql .= " AND (o.codigo LIKE ? OR c.nombre LIKE ? OR e.marca LIKE ? OR e.modelo LIKE ?)";
+        for ($i = 0; $i < 4; $i++) {
+            $params[] = $search_escaped;
+            $types .= 's';
+        }
+    }
+    
+    $sql .= " ORDER BY o.fecha_ingreso DESC LIMIT $per_page OFFSET $offset";
+    
+    if (!empty($params)) {
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+    
+    return $conn->query($sql);
 }
 
 function getRepuestosByOrden($orden_id) {

@@ -1,8 +1,30 @@
 <?php
-@session_start();
-
 define('BASE_URL', 'http://localhost/SistemaSAT/');
 define('IGV_PORCENTAJE', 18);
+define('SESSION_TIMEOUT', 1800);
+define('SESSION_ACTIVITY', 'last_activity');
+
+if (session_status() === PHP_SESSION_NONE) {
+    @session_start([
+        'cookie_httponly' => true,
+        'cookie_secure' => false,
+        'use_strict_mode' => 1,
+        'cookie_samesite' => 'Strict'
+    ]);
+}
+
+if (isset($_SESSION['logged_in']) && isset($_SESSION[SESSION_ACTIVITY])) {
+    if (time() - $_SESSION[SESSION_ACTIVITY] > SESSION_TIMEOUT) {
+        session_unset();
+        session_destroy();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        header("Location: " . BASE_URL . "autenticacion/login.php?timeout=1");
+        exit();
+    }
+    $_SESSION[SESSION_ACTIVITY] = time();
+}
 
 define('ESTADOS_ORDEN', [
     'recibido' => 'Recibido',

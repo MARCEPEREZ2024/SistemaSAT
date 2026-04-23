@@ -118,8 +118,8 @@ $clientes = getAllClientes();
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Orden de Servicio *</label>
-                                <select name="orden_id" id="ordenSelect" class="form-select" onchange="cargarOrden()">
+                                <label for="orden_id" class="form-label">Orden de Servicio *</label>
+                                <select id="orden_id" name="orden_id" id="ordenSelect" class="form-select" onchange="cargarOrden()">
                                     <option value="">Seleccionar orden...</option>
                                     <?php while ($ord = $ordenes_disponibles->fetch_assoc()): ?>
                                     <option value="<?= $ord['id'] ?>" data-cliente="<?= htmlspecialchars($ord['cliente_nombre']) ?>" data-equipo="<?= htmlspecialchars($ord['marca'] . ' ' . $ord['modelo']) ?>" data-total="<?= $ord['costo_total'] ?>" <?= ($orden_id == $ord['id']) ? 'selected' : '' ?>>
@@ -131,7 +131,7 @@ $clientes = getAllClientes();
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Cliente</label>
+                                <label for="clienteNombre" class="form-label">Cliente</label>
                                 <input type="text" id="clienteNombre" class="form-control" readonly>
                             </div>
                         </div>
@@ -143,8 +143,8 @@ $clientes = getAllClientes();
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Cliente *</label>
-                                <select name="cliente_id" id="clienteSelectDirecta" class="form-select" required>
+                                <label for="cliente_id" class="form-label">Cliente *</label>
+                                <select id="cliente_id" name="cliente_id" id="clienteSelectDirecta" class="form-select" required>
                                     <option value="">Seleccionar cliente...</option>
                                     <?php while ($c = $clientes->fetch_assoc()): ?>
                                     <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['nombre']) ?> - <?= $c['dni'] ?? '' ?></option>
@@ -154,8 +154,8 @@ $clientes = getAllClientes();
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Tipo de Pago</label>
-                                <select name="tipo_pago" class="form-select">
+                                <label for="tipo_pago" class="form-label">Tipo de Pago</label>
+                                <select id="tipo_pago" name="tipo_pago" class="form-select">
                                     <option value="efectivo">Efectivo</option>
                                     <option value="tarjeta">Tarjeta</option>
                                     <option value="transferencia">Transferencia</option>
@@ -239,8 +239,8 @@ $clientes = getAllClientes();
                 </div>
                 
                 <div class="mb-3 mt-3">
-                    <label class="form-label">Observaciones</label>
-                    <textarea name="observaciones" class="form-control" rows="2"></textarea>
+                    <label for="observaciones" class="form-label">Observaciones</label>
+                    <textarea id="observaciones" name="observaciones" class="form-control" rows="2"></textarea>
                 </div>
                 
                 <button type="submit" class="btn btn-success">

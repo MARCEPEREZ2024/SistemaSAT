@@ -42,9 +42,9 @@ if ($serie) {
         <div class="card-body">
             <form method="GET" class="row g-3">
                 <div class="col-md-8">
-                    <label class="form-label">Buscar por Número de Serie</label>
+                    <label for="serie" class="form-label">Buscar por Número de Serie</label>
                     <div class="input-group">
-                        <input type="text" name="serie" class="form-control" placeholder="Ingrese el número de serie del equipo" value="<?= htmlspecialchars($serie) ?>">
+                        <input type="text" id="serie" name="serie" class="form-control" placeholder="Ingrese el número de serie del equipo" value="<?= htmlspecialchars($serie) ?>">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-search"></i> Buscar
                         </button>

@@ -94,8 +94,8 @@ $clientes = getAllClientes();
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Cliente *</label>
-                            <select name="cliente_id" class="form-select" required>
+                            <label for="cliente_id" class="form-label">Cliente *</label>
+                            <select id="cliente_id" name="cliente_id" class="form-select" required>
                                 <option value="">Seleccionar cliente...</option>
                                 <?php while ($c = $clientes->fetch_assoc()): ?>
                                 <option value="<?= $c['id'] ?>" <?= ($orden && $orden['cliente_id'] == $c['id']) ? 'selected' : '' ?>>
@@ -107,16 +107,16 @@ $clientes = getAllClientes();
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Equipo (opcional)</label>
-                            <input type="text" class="form-control" placeholder="Marca - Modelo" value="<?= $orden ? htmlspecialchars($orden['marca'] . ' ' . $orden['modelo']) : '' ?>">
+                            <label for="equipo_id" class="form-label">Equipo (opcional)</label>
+                            <input type="text" id="equipo_id" class="form-control" placeholder="Marca - Modelo" value="<?= $orden ? htmlspecialchars($orden['marca'] . ' ' . $orden['modelo']) : '' ?>">
                             <input type="hidden" name="equipo_id" value="<?= $orden_id ?>">
                         </div>
                     </div>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Descripción del trabajo</label>
-                    <textarea name="descripcion" class="form-control" rows="2" placeholder="Describe el trabajo a realizar..."></textarea>
+                    <label for="descripcion" class="form-label">Descripción del trabajo</label>
+                    <textarea id="descripcion" name="descripcion" class="form-control" rows="2" placeholder="Describe el trabajo a realizar..."></textarea>
                 </div>
                 
                 <h5 class="mt-4 mb-3">Items de la Cotización</h5>
@@ -147,15 +147,15 @@ $clientes = getAllClientes();
                 <div class="row">
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Validez (días)</label>
-                            <input type="number" name="validez_dias" class="form-control" value="7" min="1">
+                            <label for="validez_dias" class="form-label">Validez (días)</label>
+                            <input type="number" id="validez_dias" name="validez_dias" class="form-control" value="7" min="1">
                         </div>
                     </div>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Observaciones</label>
-                    <textarea name="observaciones" class="form-control" rows="2" placeholder="Notas adicionales..."></textarea>
+                    <label for="observaciones" class="form-label">Observaciones</label>
+                    <textarea id="observaciones" name="observaciones" class="form-control" rows="2" placeholder="Notas adicionales..."></textarea>
                 </div>
                 
                 <div class="row mt-3">
