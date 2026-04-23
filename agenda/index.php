@@ -96,8 +96,8 @@ $ordenes_pendientes = $conn->query("
                 <div class="card-body">
                     <form method="POST">
                         <div class="mb-3">
-                            <label class="form-label">Orden</label>
-                            <select name="orden_id" class="form-select" required>
+                            <label for="orden_id" class="form-label">Orden</label>
+                            <select id="orden_id" name="orden_id" class="form-select" required>
                                 <option value="">Seleccionar...</option>
                                 <?php while ($o = $ordenes_pendientes->fetch_assoc()): ?>
                                 <option value="<?= $o['id'] ?>"><?= $o['codigo'] ?> - <?= htmlspecialchars($o['cliente_nombre']) ?></option>
@@ -105,16 +105,16 @@ $ordenes_pendientes = $conn->query("
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Fecha</label>
-                            <input type="date" name="fecha_entrega" class="form-control" required>
+                            <label for="fecha_entrega" class="form-label">Fecha</label>
+                            <input type="date" id="fecha_entrega" name="fecha_entrega" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Hora</label>
-                            <input type="time" name="hora_entrega" class="form-control">
+                            <label for="hora_entrega" class="form-label">Hora</label>
+                            <input type="time" id="hora_entrega" name="hora_entrega" class="form-control">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Nota</label>
-                            <textarea name="nota" class="form-control" rows="2"></textarea>
+                            <label for="nota" class="form-label">Nota</label>
+                            <textarea id="nota" name="nota" class="form-control" rows="2"></textarea>
                         </div>
                         <button type="submit" name="agregar" class="btn btn-success w-100">Programar Entrega</button>
                     </form>

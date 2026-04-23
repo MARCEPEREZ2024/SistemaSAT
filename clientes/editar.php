@@ -35,7 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("sssssi", $nombre, $email, $telefono, $direccion, $dni, $id);
         
         if ($stmt->execute()) {
-            redirect('clientes/listar.php');
+                require_once '../include/audit_helper.php';
+                logClienteUpdate($conn, $id, $cliente, $_POST);
+                
+                redirect('clientes/listar.php');
         } else {
             $error = 'Error al actualizar el cliente';
         }
@@ -60,34 +63,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Nombre *</label>
-                            <input type="text" name="nombre" class="form-control" value="<?= htmlspecialchars($cliente['nombre']) ?>" required>
+                            <label for="nombre" class="form-label">Nombre *</label>
+                            <input type="text" id="nombre" name="nombre" class="form-control" value="<?= htmlspecialchars($cliente['nombre']) ?>" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($cliente['email'] ?? '') ?>">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" name="email" class="form-control" value="<?= htmlspecialchars($cliente['email'] ?? '') ?>">
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Teléfono *</label>
-                            <input type="text" name="telefono" class="form-control" value="<?= htmlspecialchars($cliente['telefono']) ?>" required>
+                            <label for="telefono" class="form-label">Teléfono *</label>
+                            <input type="text" id="telefono" name="telefono" class="form-control" value="<?= htmlspecialchars($cliente['telefono']) ?>" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">DNI</label>
-                            <input type="text" name="dni" class="form-control" value="<?= htmlspecialchars($cliente['dni'] ?? '') ?>">
+                            <label for="dni" class="form-label">DNI</label>
+                            <input type="text" id="dni" name="dni" class="form-control" value="<?= htmlspecialchars($cliente['dni'] ?? '') ?>">
                         </div>
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Dirección</label>
-                    <textarea name="direccion" class="form-control" rows="2"><?= htmlspecialchars($cliente['direccion'] ?? '') ?></textarea>
+                    <label for="direccion" class="form-label">Dirección</label>
+                    <textarea id="direccion" name="direccion" class="form-control" rows="2"><?= htmlspecialchars($cliente['direccion'] ?? '') ?></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-save"></i> Actualizar Cliente
