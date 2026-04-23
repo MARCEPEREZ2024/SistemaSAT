@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 23-04-2026 a las 03:27:27
+-- Tiempo de generación: 23-04-2026 a las 04:02:33
 -- Versión del servidor: 8.4.7
 -- Versión de PHP: 8.4.15
 
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS `audit_log` (
   KEY `idx_accion` (`accion`),
   KEY `idx_tabla` (`tabla`),
   KEY `idx_fecha` (`fecha`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `audit_log`
@@ -119,7 +119,9 @@ INSERT INTO `audit_log` (`id`, `usuario_id`, `usuario_nombre`, `accion`, `tabla`
 (16, 6, 'benjamin', 'login_exitoso', 'usuarios', 6, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-23 00:24:54'),
 (17, 1, 'Administrador', 'login_exitoso', 'usuarios', 1, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-23 02:27:53'),
 (18, 1, 'Administrador', 'logout', 'usuarios', 1, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-23 02:37:02'),
-(19, 1, 'Administrador', 'login_exitoso', 'usuarios', 1, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-23 02:47:18');
+(19, 1, 'Administrador', 'login_exitoso', 'usuarios', 1, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-23 02:47:18'),
+(20, 1, 'Administrador', 'logout', 'usuarios', 1, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-23 03:48:54'),
+(21, 1, 'Administrador', 'login_exitoso', 'usuarios', 1, NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-23 03:48:55');
 
 -- --------------------------------------------------------
 
@@ -164,7 +166,7 @@ CREATE TABLE IF NOT EXISTS `configuraciones` (
   `valor` text COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `clave` (`clave`)
-) ENGINE=MyISAM AUTO_INCREMENT=135 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=152 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `configuraciones`
@@ -186,7 +188,24 @@ INSERT INTO `configuraciones` (`id`, `clave`, `valor`) VALUES
 (131, 'smtp_pass', 'nsml gjbb dnge xesy'),
 (128, 'smtp_host', 'smtp.gmail.com'),
 (129, 'smtp_port', '587'),
-(134, 'smtp_secure', 'tls');
+(134, 'smtp_secure', 'tls'),
+(135, 'payment_paypal_enabled', '0'),
+(136, 'payment_mercadopago_enabled', '0'),
+(137, 'payment_yape_enabled', '0'),
+(138, 'payment_plin_enabled', '0'),
+(139, 'payment_transferencia_enabled', '1'),
+(140, 'paypal_mode', 'sandbox'),
+(141, 'paypal_client_id', ''),
+(142, 'paypal_client_secret', ''),
+(143, 'mp_access_token', ''),
+(144, 'mp_public_key', ''),
+(145, 'yape_numero', ''),
+(146, 'yape_nombre', ''),
+(147, 'plin_numero', ''),
+(148, 'plin_nombre', ''),
+(149, 'banco_nombre', ''),
+(150, 'banco_numero', ''),
+(151, 'banco_cci', '');
 
 -- --------------------------------------------------------
 
@@ -203,7 +222,7 @@ CREATE TABLE IF NOT EXISTS `config_seguridad` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `clave` (`clave`),
   KEY `idx_clave` (`clave`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `config_seguridad`
@@ -771,6 +790,29 @@ INSERT INTO `ordenes_servicio` (`id`, `codigo`, `equipo_id`, `tecnico_id`, `clie
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `pagos_online`
+--
+
+DROP TABLE IF EXISTS `pagos_online`;
+CREATE TABLE IF NOT EXISTS `pagos_online` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `factura_id` int NOT NULL,
+  `metodo` enum('paypal','mercadopago','yape','plin') NOT NULL,
+  `transaction_id` varchar(100) DEFAULT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  `estado` enum('pendiente','completado','fallido','cancelado','reembolsado') DEFAULT 'pendiente',
+  `detalles` text,
+  `fecha_creacion` datetime DEFAULT CURRENT_TIMESTAMP,
+  `fecha_actualizacion` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_factura` (`factura_id`),
+  KEY `idx_estado` (`estado`),
+  KEY `idx_transaccion` (`transaction_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `presupuestos`
 --
 
@@ -983,3 +1025,4 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
