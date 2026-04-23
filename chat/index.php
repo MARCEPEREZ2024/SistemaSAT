@@ -198,22 +198,24 @@ if ($tipo !== 'global' && $otro_id): ?>
 </div>
 
 <script>
-setInterval(function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tipo = urlParams.get('tipo') || 'global';
-    const usuario = urlParams.get('usuario') || '';
+function refreshChat() {
+    var chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
     
-    fetch('<?= BASE_URL ?>api/chat_messages.php?tipo=' + tipo + '&usuario=' + usuario, {cache: 'no-cache'})
-        .then(function(r) { 
-            if (!r.ok) throw new Error('Network error');
-            return r.text(); 
-        })
-        .then(function(html) {
-            document.getElementById('chatMessages').innerHTML = html;
-        })
-        .catch(function(e) { 
-            console.log('Chat refresh:', e.message); 
-        });
-}, 10000);
+    var urlParams = new URLSearchParams(window.location.search);
+    var tipo = urlParams.get('tipo') || 'global';
+    var usuario = urlParams.get('usuario') || '';
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '<?= BASE_URL ?>api/chat_messages.php?tipo=' + tipo + '&usuario=' + usuario, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            chatMessages.innerHTML = xhr.responseText;
+        }
+    };
+    xhr.send();
+}
+
+setInterval(refreshChat, 10000);
 </script>
 <?php require_once '../include/footer.php'; ?>
