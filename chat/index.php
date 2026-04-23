@@ -94,7 +94,7 @@ require_once '../include/header.php';
                         </div>
                         
                         <div class="tab-pane" id="privados">
-                            <?php while ($c = $conversaciones->fetch_assoc()): if ($c['otro_id']): ?>
+                            <?php foreach ($conversaciones as $c): if ($c['otro_id']): ?>
                             <a href="?tipo=privado&usuario=<?= $c['otro_id'] ?>" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center <?= $otro_id == $c['otro_id'] ? 'active' : '' ?>">
                                 <div>
                                     <strong><?= htmlspecialchars($c['otro_nombre']) ?></strong>
@@ -104,9 +104,9 @@ require_once '../include/header.php';
                                 <span class="badge bg-danger"><?= $c['sin_leer'] ?></span>
                                 <?php endif; ?>
                             </a>
-                            <?php endif; endwhile; ?>
+                            <?php endif; endforeach; ?>
                             
-                            <?php if ($conversaciones->num_rows == 0): ?>
+                            <?php if (count($conversaciones) == 0): ?>
                             <div class="p-3 text-muted text-center">Sin conversaciones</div>
                             <?php endif; ?>
                         </div>
@@ -146,7 +146,10 @@ require_once '../include/header.php';
                     <h5 class="mb-0"><i class="bi bi-chat-<?= $tipo === 'global' ? 'text' : 'quote' ?>"></i> <?= $titulo_chat ?></h5>
                     <?php
 if ($tipo !== 'global' && $otro_id) {
-    $conn->query("UPDATE mensajes_internos SET leido = 1 WHERE destinatario_id = $user_id AND remitente_id = $otro_id");
+    $stmt = $conn->prepare("UPDATE mensajes_internos SET leido = 1 WHERE destinatario_id = ? AND remitente_id = ?");
+    $stmt->bind_param("ii", $user_id, $otro_id);
+    $stmt->execute();
+    $stmt->close();
 }
 if ($tipo !== 'global' && $otro_id): ?>
                     <a href="index.php" class="btn btn-sm btn-outline-secondary">

@@ -96,14 +96,8 @@ switch ($action) {
         $limit = (int)($_GET['limit'] ?? 50);
         $offset = (int)($_GET['offset'] ?? 0);
         
-        $where = "1=1";
-        if ($estado) {
-            $where .= " AND o.estado = '$estado'";
-        }
-        
-        if ($user['rol'] === 'tecnico') {
-            $where .= " AND o.tecnico_id = " . $user['id'];
-        }
+        $params = [];
+        $types = "";
         
         $sql = "SELECT o.id, o.codigo, o.estado, o.prioridad, o.fecha_ingreso, o.costo_total,
                        c.nombre as cliente_nombre, c.telefono as cliente_telefono,
@@ -111,11 +105,31 @@ switch ($action) {
                 FROM ordenes_servicio o
                 LEFT JOIN clientes c ON o.cliente_id = c.id
                 LEFT JOIN equipos e ON o.equipo_id = e.id
-                WHERE $where
-                ORDER BY o.fecha_ingreso DESC
-                LIMIT $limit OFFSET $offset";
+                WHERE 1=1";
         
-        $result = $conn->query($sql);
+        if ($estado) {
+            $sql .= " AND o.estado = ?";
+            $params[] = $estado;
+            $types .= "s";
+        }
+        
+        if ($user['rol'] === 'tecnico') {
+            $sql .= " AND o.tecnico_id = ?";
+            $params[] = $user['id'];
+            $types .= "i";
+        }
+        
+        $sql .= " ORDER BY o.fecha_ingreso DESC LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+        $types .= "ii";
+        
+        $stmt = $conn->prepare($sql);
+        if ($params) {
+            $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+        $result = $stmt->get_result();
         $ordenes = [];
         
         while ($row = $result->fetch_assoc()) {
@@ -150,16 +164,20 @@ switch ($action) {
         
         if ($orden = $result->fetch_assoc()) {
             // Get history
-            $historial = $conn->query("
+            $stmt_hist = $conn->prepare("
                 SELECT * FROM estados_seguimiento 
-                WHERE orden_id = $id 
+                WHERE orden_id = ? 
                 ORDER BY fecha DESC
             ");
+            $stmt_hist->bind_param("i", $id);
+            $stmt_hist->execute();
+            $historial = $stmt_hist->get_result();
             
             $historial_array = [];
             while ($h = $historial->fetch_assoc()) {
                 $historial_array[] = $h;
             }
+            $stmt_hist->close();
             
             $orden['historial'] = $historial_array;
             
@@ -209,26 +227,39 @@ switch ($action) {
         $search = $_GET['search'] ?? '';
         $limit = (int)($_GET['limit'] ?? 50);
         
-        $where = "c.estado = 'activo'";
-        if ($search) {
-            $where .= " AND (c.nombre LIKE '%$search%' OR c.telefono LIKE '%$search%' OR c.dni LIKE '%$search%')";
-        }
-        
+        $params = [];
+        $types = "";
         $sql = "SELECT c.id, c.nombre, c.email, c.telefono, c.dni, c.direccion,
                        COUNT(o.id) as ordenes_count
                 FROM clientes c
                 LEFT JOIN ordenes_servicio o ON c.id = o.cliente_id
-                WHERE $where
-                GROUP BY c.id
-                ORDER BY c.nombre
-                LIMIT $limit";
+                WHERE c.estado = 'activo'";
         
-        $result = $conn->query($sql);
+        if ($search) {
+            $sql .= " AND (c.nombre LIKE ? OR c.telefono LIKE ? OR c.dni LIKE ?)";
+            $search_param = "%$search%";
+            $params[] = $search_param;
+            $params[] = $search_param;
+            $params[] = $search_param;
+            $types .= "sss";
+        }
+        
+        $sql .= " GROUP BY c.id ORDER BY c.nombre LIMIT ?";
+        $params[] = $limit;
+        $types .= "i";
+        
+        $stmt = $conn->prepare($sql);
+        if ($params) {
+            $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+        $result = $stmt->get_result();
         $clientes = [];
         
         while ($row = $result->fetch_assoc()) {
             $clientes[] = $row;
         }
+        $stmt->close();
         
         respond(['success' => true, 'data' => $clientes]);
         break;

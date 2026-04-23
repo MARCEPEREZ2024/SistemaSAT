@@ -41,13 +41,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_config'])) {
     $smtp_secure = sanitize($_POST['smtp_secure'] ?? 'tls');
     
     $conn->query("DELETE FROM configuraciones WHERE clave LIKE 'smtp_%'");
-    $conn->query("INSERT INTO configuraciones (clave, valor) VALUES ('smtp_host', '$smtp_host')");
-    $conn->query("INSERT INTO configuraciones (clave, valor) VALUES ('smtp_port', '$smtp_port')");
-    $conn->query("INSERT INTO configuraciones (clave, valor) VALUES ('smtp_user', '$smtp_user')");
-    $conn->query("INSERT INTO configuraciones (clave, valor) VALUES ('smtp_pass', '$smtp_pass')");
-    $conn->query("INSERT INTO configuraciones (clave, valor) VALUES ('smtp_from_email', '$smtp_from_email')");
-    $conn->query("INSERT INTO configuraciones (clave, valor) VALUES ('smtp_from_name', '$smtp_from_name')");
-    $conn->query("INSERT INTO configuraciones (clave, valor) VALUES ('smtp_secure', '$smtp_secure')");
+
+    $configs = [
+        ['smtp_host', $smtp_host],
+        ['smtp_port', $smtp_port],
+        ['smtp_user', $smtp_user],
+        ['smtp_pass', $smtp_pass],
+        ['smtp_from_email', $smtp_from_email],
+        ['smtp_from_name', $smtp_from_name],
+        ['smtp_secure', $smtp_secure]
+    ];
+    
+    $stmt = $conn->prepare("INSERT INTO configuraciones (clave, valor) VALUES (?, ?)");
+    foreach ($configs as $config) {
+        $stmt->bind_param("ss", $config[0], $config[1]);
+        $stmt->execute();
+    }
+    $stmt->close();
     
     $config = [
         'smtp_host' => $smtp_host,

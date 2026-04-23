@@ -62,7 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar'])) {
 if (isset($_GET['eliminar'])) {
     $id = (int)$_GET['eliminar'];
     if ($id != $_SESSION['usuario_id']) {
-        $conn->query("DELETE FROM usuarios WHERE id = $id");
+        $stmt = $conn->prepare("DELETE FROM usuarios WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
     }
     redirect('usuarios/listar.php');
 }
@@ -171,7 +174,7 @@ $usuario_edit = $editando > 0 ? getUserById($editando) : null;
                             <tr>
                                 <td><?= htmlspecialchars($u['nombre']) ?></td>
                                 <td><?= htmlspecialchars($u['email']) ?></td>
-                                <td><?= $u['telefono'] ?? '-' ?></td>
+                                <td><?= htmlspecialchars($u['telefono'] ?? '-') ?></td>
                                 <td>
                                     <span class="badge bg-<?= match($u['rol']) { 'admin'=>'danger','tecnico'=>'primary','ventas'=>'success' } ?>">
                                         <?= ucfirst($u['rol']) ?>
